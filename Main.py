@@ -6,7 +6,7 @@ import os
 import math
 import datetime
 import glob
-import random+
+import random
 import cv2
 
 import keras
@@ -47,16 +47,67 @@ test_d_gen= ImageDataGenerator(
     rescale=1/255
 )
 
-train_gene=train_d_gen.flow_from_directory(
+train_iters=train_d_gen.flow_from_directory(
     train_path,
     target_size=(img_wedth,img_vertical),
-    batch_size=32,
-    class_mode='sparse'
+    class_mode='sparse',
+    batch_size=50
 )
 
-test_gene = test_d_gen.flow_from_directory(
+test_iters=test_d_gen.flow_from_directory(
     test_path,
     target_size=(img_wedth, img_vertical),
-    batch_size=32,
-    class_mode='sparse'
+    class_mode='sparse',
+    batch_size=50
 )
+
+model.add(Conv2D(
+    256,
+    (5,5),
+    strides=(1,1),
+    padding='same',
+    activation='relu',
+    input_shape=(112,112,3)
+))
+
+model.add(Flatten())
+
+model.add(Conv2D(
+    192,
+    (3,3),
+    strides=(1,1),
+    padding='same',
+    activation='relu'
+))
+
+model.add(Dense(
+    144,
+    activation='relu'
+))
+
+model.add(Dropout(0.3))
+
+model.add(Conv2D(
+    72,
+    (3, 3),
+    strides=(1, 1),
+    padding='same',
+    activation='relu'
+))
+
+model.add(Conv2D(
+    36,
+    (3,3),
+    strides=(1,1),
+    padding='same',
+    activation='relu'
+))
+
+model.add(Dense(18,activation='softmax'))
+#モデル保存
+train_id = datetime.datetime.Now().strftime("%Y/%m/%d-%H:%M:%S")
+log_dir=os.path.join("logs",train_id)
+
+ckpt_dir=os.path.join("ckpt",train_id)
+if not os.path.exists(ckpt_dir):
+    os.makedirs(ckpt_dir)
